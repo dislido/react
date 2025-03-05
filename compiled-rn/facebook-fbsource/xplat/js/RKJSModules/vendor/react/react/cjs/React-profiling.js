@@ -7,7 +7,7 @@
  * @noflow
  * @nolint
  * @preventMunge
- * @generated SignedSource<<ae6862366ec80c5dfc302c1d90cb76bb>>
+ * @generated SignedSource<<5d9070b32fb7e31b42a3e485eb2f4f1a>>
  */
 
 "use strict";
@@ -15,8 +15,8 @@
   "function" ===
     typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
   __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-var enableUseResourceEffectHook =
-    require("ReactNativeInternalFeatureFlags").enableUseResourceEffectHook,
+var enableUseEffectCRUDOverload =
+    require("ReactNativeInternalFeatureFlags").enableUseEffectCRUDOverload,
   REACT_LEGACY_ELEMENT_TYPE = Symbol.for("react.element"),
   REACT_PORTAL_TYPE = Symbol.for("react.portal"),
   REACT_FRAGMENT_TYPE = Symbol.for("react.fragment"),
@@ -33,6 +33,7 @@ var enableUseResourceEffectHook =
   REACT_OFFSCREEN_TYPE = Symbol.for("react.offscreen"),
   REACT_LEGACY_HIDDEN_TYPE = Symbol.for("react.legacy_hidden"),
   REACT_TRACING_MARKER_TYPE = Symbol.for("react.tracing_marker"),
+  REACT_VIEW_TRANSITION_TYPE = Symbol.for("react.view_transition"),
   MAYBE_ITERATOR_SYMBOL = Symbol.iterator;
 function getIteratorFn(maybeIterable) {
   if (null === maybeIterable || "object" !== typeof maybeIterable) return null;
@@ -85,7 +86,7 @@ pureComponentPrototype.constructor = PureComponent;
 assign(pureComponentPrototype, Component.prototype);
 pureComponentPrototype.isPureReactComponent = !0;
 var isArrayImpl = Array.isArray,
-  ReactSharedInternals = { H: null, A: null, T: null, S: null },
+  ReactSharedInternals = { H: null, A: null, T: null, S: null, V: null },
   hasOwnProperty = Object.prototype.hasOwnProperty;
 function ReactElement(type, key, self, source, owner, props) {
   self = props.ref;
@@ -313,16 +314,6 @@ function lazyInitializer(payload) {
 function useMemoCache(size) {
   return ReactSharedInternals.H.useMemoCache(size);
 }
-function useResourceEffect(create, createDeps, update, updateDeps, destroy) {
-  if (!enableUseResourceEffectHook) throw Error("Not implemented.");
-  return ReactSharedInternals.H.useResourceEffect(
-    create,
-    createDeps,
-    update,
-    updateDeps,
-    destroy
-  );
-}
 var reportGlobalError =
   "function" === typeof reportError
     ? reportError
@@ -353,10 +344,7 @@ var reportGlobalError =
         console.error(error);
       };
 function noop() {}
-var ReactCompilerRuntime = { c: useMemoCache },
-  experimental_useResourceEffect = enableUseResourceEffectHook
-    ? useResourceEffect
-    : void 0;
+var ReactCompilerRuntime = { __proto__: null, c: useMemoCache };
 exports.Children = {
   map: mapChildren,
   forEach: function (children, forEachFunc, forEachContext) {
@@ -482,7 +470,6 @@ exports.createRef = function () {
 exports.experimental_useEffectEvent = function (callback) {
   return ReactSharedInternals.H.useEffectEvent(callback);
 };
-exports.experimental_useResourceEffect = experimental_useResourceEffect;
 exports.forwardRef = function (render) {
   return { $$typeof: REACT_FORWARD_REF_TYPE, render: render };
 };
@@ -528,6 +515,14 @@ exports.unstable_LegacyHidden = REACT_LEGACY_HIDDEN_TYPE;
 exports.unstable_Scope = REACT_SCOPE_TYPE;
 exports.unstable_SuspenseList = REACT_SUSPENSE_LIST_TYPE;
 exports.unstable_TracingMarker = REACT_TRACING_MARKER_TYPE;
+exports.unstable_ViewTransition = REACT_VIEW_TRANSITION_TYPE;
+exports.unstable_addTransitionType = function (type) {
+  var pendingTransitionTypes = ReactSharedInternals.V;
+  null === pendingTransitionTypes
+    ? (ReactSharedInternals.V = [type])
+    : -1 === pendingTransitionTypes.indexOf(type) &&
+      pendingTransitionTypes.push(type);
+};
 exports.unstable_getCacheForType = function (resourceType) {
   var dispatcher = ReactSharedInternals.A;
   return dispatcher ? dispatcher.getCacheForType(resourceType) : resourceType();
@@ -552,8 +547,24 @@ exports.useDebugValue = function () {};
 exports.useDeferredValue = function (value, initialValue) {
   return ReactSharedInternals.H.useDeferredValue(value, initialValue);
 };
-exports.useEffect = function (create, deps) {
-  return ReactSharedInternals.H.useEffect(create, deps);
+exports.useEffect = function (create, createDeps, update, updateDeps, destroy) {
+  var dispatcher = ReactSharedInternals.H;
+  if (
+    enableUseEffectCRUDOverload &&
+    ("function" === typeof update || "function" === typeof destroy)
+  )
+    return dispatcher.useEffect(
+      create,
+      createDeps,
+      update,
+      updateDeps,
+      destroy
+    );
+  if ("function" === typeof update)
+    throw Error(
+      "useEffect CRUD overload is not enabled in this build of React."
+    );
+  return dispatcher.useEffect(create, createDeps);
 };
 exports.useId = function () {
   return ReactSharedInternals.H.useId();
@@ -596,7 +607,7 @@ exports.useSyncExternalStore = function (
 exports.useTransition = function () {
   return ReactSharedInternals.H.useTransition();
 };
-exports.version = "19.1.0-native-fb-056073de-20250109";
+exports.version = "19.1.0-native-fb-e9252bcd-20250304";
 "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
   "function" ===
     typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&
